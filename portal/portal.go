@@ -3,6 +3,7 @@ package portal
 import (
 	"container/ring"
 	"fmt"
+	"log"
 	"os"
 
 	tm "github.com/buger/goterm"
@@ -23,6 +24,7 @@ type Portal struct {
 	ringBuf *ring.Ring
 	ch      chan string
 	isTTY   bool
+	oFile   *os.File
 }
 
 // New creates a new instance of Portal.
@@ -39,12 +41,38 @@ func New(opt *Options) *Portal {
 		opt.Height = tm.Height() - 1
 	}
 
+	var of *os.File
+	var err error
+	if opt.OutFile != "" {
+		if of, err = os.OpenFile(opt.OutFile, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0644); err != nil {
+			log.Fatalln(err)
+		}
+	}
+
 	return &Portal{
 		opt:     opt,
 		ringBuf: ring.New(opt.Height),
 		ch:      make(chan string),
 		isTTY:   true,
+		oFile:   of,
 	}
+}
+
+func (p *Portal) fileWriter(in <-chan string) <-chan string {
+	if p.oFile == nil {
+		return in
+	}
+
+	ch := make(chan string)
+	go func() {
+		for line := range in {
+			ch <- line
+			if _, err := p.oFile.WriteString(line + "\n"); err != nil {
+				log.Fatalln(err)
+			}
+		}
+	}()
+	return ch
 }
 
 // Open starts the portal to process the incoming text. It returns a channel to input the text.
@@ -58,8 +86,9 @@ func (p *Portal) Open() chan<- string {
 		return p.ch
 	}
 
-	out := splitAtNewLine(p.ch)
-	out2 := p.foldLine(out)
+	out := p.fileWriter(p.ch)
+	out1 := splitAtNewLine(out)
+	out2 := p.foldLine(out1)
 	go func(in <-chan string) {
 		fmt.Println()
 		for line := range in {
@@ -85,6 +114,13 @@ func (p *Portal) Open() chan<- string {
 // Close releases the resources being used by the portal and closes it.
 func (p *Portal) Close() {
 	close(p.ch)
+	if p.oFile == nil {
+		return
+	}
+	fmt.Println("Output written to ", p.opt.OutFile)
+	if err := p.oFile.Close(); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 // reset clears the lines above and moves the cursor to initial position.

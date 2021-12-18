@@ -27,7 +27,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/tejas-w/portal/portal"
+	"github.com/tjs-w/portal/portal"
 )
 
 var cfgFile string
