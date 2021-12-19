@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 
-	tm "github.com/buger/goterm"
 	"github.com/mattn/go-isatty"
+
+	"github.com/tjs-w/portal/sys"
 )
 
 // Options configure the working of Portal.
@@ -37,8 +38,8 @@ func New(opt *Options) *Portal {
 	}
 
 	// Evaluate options and set defaults if needed
-	if opt.Height <= 0 || opt.Height > tm.Height() {
-		opt.Height = tm.Height() - 1
+	if opt.Height <= 0 || opt.Height > sys.TermHeight() {
+		opt.Height = sys.TermHeight() - 1
 	}
 
 	var of *os.File
@@ -172,8 +173,8 @@ func min(a, b int) int {
 // currWidth is used to determine current width to dynamically change the value if the terminal width is changed
 // on the fly.
 func (p *Portal) currWidth() int {
-	if p.opt.Width <= 0 || p.opt.Width > tm.Width() {
-		return tm.Width()
+	if p.opt.Width <= 0 || p.opt.Width > sys.TermWidth() {
+		return sys.TermWidth()
 	}
 	return p.opt.Width
 }

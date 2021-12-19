@@ -22,12 +22,12 @@ import (
 	"log"
 	"os"
 
-	tm "github.com/buger/goterm"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 
 	"github.com/tjs-w/portal/portal"
+	"github.com/tjs-w/portal/sys"
 )
 
 var cfgFile string
@@ -101,9 +101,12 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
 		"config file (default is $HOME/.portal.yaml)")
 
-	rootCmd.Flags().StringP("out-file", "o", "", "Log file to fork the writes to")
-	rootCmd.Flags().IntP("size", "s", 8, "Size is the height of the portal in number of lines.")
-	rootCmd.Flags().IntP("width", "w", tm.Width(), "Set the width for the output, terminal width as default")
+	rootCmd.Flags().StringP("out-file", "o", "",
+		"Log file to fork the writes to")
+	rootCmd.Flags().IntP("size", "s", 8,
+		"Size is the height of the portal in number of lines.")
+	rootCmd.Flags().IntP("width", "w", sys.TermWidth(),
+		"Set the width for the output, terminal width as default")
 
 }
 
