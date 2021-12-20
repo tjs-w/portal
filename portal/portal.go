@@ -88,7 +88,7 @@ func (p *Portal) Open() chan<- string {
 	}
 
 	out := p.fileWriter(p.ch)
-	out1 := splitAtNewLine(out)
+	out1 := sys.SplitAtNewLine(out)
 	out2 := p.foldLine(out1)
 	go func(in <-chan string) {
 		fmt.Println()
@@ -140,27 +140,6 @@ func clearLine() {
 // moveUp moves the cursor n line(s) up
 func moveUp(n int) {
 	fmt.Printf("\x1b[%dA", n)
-}
-
-// splitAtNewLine takes an input line and breaks it at '\n' to form the output.
-func splitAtNewLine(in <-chan string) <-chan string {
-	out := make(chan string)
-	go func() {
-		for line := range in {
-			st := 0
-			for i, r := range line {
-				if r == '\n' {
-					out <- line[st:i]
-					st = i + 1
-				}
-			}
-			if st < len(line) {
-				out <- line[st:]
-			}
-		}
-		close(out)
-	}()
-	return out
 }
 
 func min(a, b int) int {
