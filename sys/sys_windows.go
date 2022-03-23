@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+// winSize makes the Windows system call to get the dimensions of the TTY window
 func winSize() (*windows.ConsoleScreenBufferInfo, error) {
 	fd := os.Stdout.Fd()
 	var info windows.ConsoleScreenBufferInfo
@@ -18,6 +19,7 @@ func winSize() (*windows.ConsoleScreenBufferInfo, error) {
 	return info, nil
 }
 
+// TermHeight returns the height of terminal, in # of lines
 func TermHeight() int {
 	info, err := winSize()
 	if err != nil {
@@ -26,6 +28,7 @@ func TermHeight() int {
 	return info.Window.Bottom - info.Window.Top + 1
 }
 
+// TermWidth returns the width of the terminal, in # of runes
 func TermWidth() int {
 	info, err := winSize()
 	if err != nil {

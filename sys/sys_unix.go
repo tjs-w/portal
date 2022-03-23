@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// winSize makes the unix system call IOCTL to get the dimensions of the TTY window
 func winSize() (*unix.Winsize, error) {
 	ws, err := unix.IoctlGetWinsize(int(os.Stdout.Fd()), unix.TIOCGWINSZ)
 	if err != nil {
@@ -17,6 +18,7 @@ func winSize() (*unix.Winsize, error) {
 	return ws, nil
 }
 
+// TermHeight returns the height of terminal, in # of lines
 func TermHeight() int {
 	w, err := winSize()
 	if err != nil {
@@ -25,6 +27,7 @@ func TermHeight() int {
 	return int(w.Row)
 }
 
+// TermWidth returns the width of the terminal, in # of runes
 func TermWidth() int {
 	w, err := winSize()
 	if err != nil {

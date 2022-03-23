@@ -13,9 +13,11 @@ import (
 
 // Options configure the working of Portal.
 type Options struct {
-	Height  int    // Height of the Portal
-	Width   int    // Width of the Portal
-	OutFile string // OutFile is the output-file to log the output to
+	Height   int                      // Height of the Portal
+	Width    int                      // Width of the Portal
+	OutFile  string                   // OutFile is the output-file to log the output to
+	HeaderFn func(interface{}) string // HeaderFn is the function that returns the evaluated header string
+	FooterFn func(interface{}) string // FooterFn is the function that returns the evaluated footer string
 }
 
 // Portal keeps the state of the portal from creation to end.
@@ -30,6 +32,7 @@ type Portal struct {
 
 // New creates a new instance of Portal.
 func New(opt *Options) *Portal {
+	// If not a TTY, do nothing...
 	if !(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) {
 		return &Portal{
 			ch:    make(chan string),
@@ -42,6 +45,7 @@ func New(opt *Options) *Portal {
 		opt.Height = sys.TermHeight() - 1
 	}
 
+	// Open the file to log, if provided
 	var of *os.File
 	var err error
 	if opt.OutFile != "" {
@@ -103,7 +107,7 @@ func (p *Portal) Open() chan<- string {
 			}
 
 			p.reset()
-			p.ringBuf.Do(func(line interface{}) {
+			p.ringBuf.Do(func(line any) {
 				fmt.Print(line.(string))
 			})
 		}
